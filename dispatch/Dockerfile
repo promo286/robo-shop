@@ -2,9 +2,15 @@ FROM golang:1.17
 
 WORKDIR /go/src/app
 
-COPY *.go .
+# Copy Go modules and install dependencies
+COPY go.mod go.sum ./
+RUN go mod tidy
 
-RUN go mod init dispatch && go get
-RUN go install
+# Copy the application source code
+COPY *.go ./
 
-CMD dispatch
+# Build the application
+RUN go build -o app
+
+# Run the application
+CMD ["./app"]
