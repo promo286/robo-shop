@@ -1,10 +1,18 @@
-FROM golang:1.17
+# Use a modern Go version
+FROM golang:1.21
 
-WORKDIR /go/src/app
+# Set working directory inside the container
+WORKDIR /app
 
-COPY *.go .
+# Copy go files and dependencies
+COPY go.mod go.sum ./
+RUN go mod tidy
 
-RUN go mod init dispatch && go get
-RUN go install
+# Copy all Go files
+COPY *.go . 
 
-CMD dispatch
+# Build the binary
+RUN go build -o dispatch
+
+# Run the binary
+CMD ["./dispatch"]
