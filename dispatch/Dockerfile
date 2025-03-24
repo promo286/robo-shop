@@ -1,20 +1,10 @@
-FROM golang:1.23
+FROM golang:1.17
 
 WORKDIR /go/src/app
 
-# Copy go.mod and go.sum first to leverage Docker layer caching
-COPY go.mod go.sum ./
+COPY *.go .
 
-# Download dependencies
-RUN go mod tidy
+RUN go mod init dispatch && go get
+RUN go install
 
-# Copy source files
-COPY . .
-
-# Ensure required modules are installed
-RUN go get -d ./...
-
-# Build the application
-RUN go build -o app
-
-CMD ["./app"]
+CMD dispatch
