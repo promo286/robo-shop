@@ -1,18 +1,30 @@
-# Use a modern Go version
-FROM golang:1.21
+# Stage 1: Build Stage
+FROM golang:1.21 AS builder
 
-# Set working directory inside the container
 WORKDIR /app
 
-# Copy go files and dependencies
+# Copy go.mod and go.sum first to leverage Docker caching
 COPY go.mod go.sum ./
+
+# Ensure modules are downloaded before copying full source code
 RUN go mod tidy
 
-# Copy all Go files
-COPY *.go . 
+# Copy source code
+COPY . .
 
-# Build the binary
+# Build the application as a static binary
 RUN go build -o dispatch
 
-# Run the binary
+# Stage 2: Create a lightweight final image
+FROM alpine:latest
+
+WORKDIR /root/
+
+# Copy the compiled binary from the builder stage
+COPY --from=builder /app/dispatch .
+
+# Set executable permissions (optional but ensures no issues)
+RUN chmod +x dispatch
+
+# Run the application
 CMD ["./dispatch"]
